@@ -1,0 +1,151 @@
+-- Activity 1: Data Loading
+Drop database if exists monday_coffee_project;
+Create Database monday_coffee_project;
+USE monday_coffee_project;
+
+USE monday_coffee_project;
+create table customers (
+customer_id int primary key,
+customer_name varchar (100),
+city varchar (50),
+email varchar (100)
+);
+Create table products(
+product_id int primary key,
+product_name varchar (100),
+price decimal (10,2)
+);
+Create table sales ( 
+sale_id int primary key,
+sale_date date, 
+customer_id int,
+product_id int,
+quantity int,
+total_amount decimal (10,2),
+NONE varchar(50),
+FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
+FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
+Select * FROM customers Limit 5;
+Select * FROM products Limit 10;
+Select * FROM sales Limit 10;
+Drop table if exists sales;
+
+-- Activity 2: data cleaning
+select * from customers
+where customer_id is NULL
+Or city is NULL
+Or customer_name is NULL
+or email is NULL;
+
+Select * from products 
+where product_id is null
+or price is null
+or product_name is null;
+
+SELECT * from sales 
+Where sale_id is null 
+   or sale_date is null
+   or customer_id is null
+   or product_id is null
+   or quantity is null
+   or total_amount is null;
+
+select customer_id, count(*) 
+from customers
+group by customer_id
+having count(*)>1; 
+Select  s.sale_id, s.quantity, p.price, s.total_amount, (s.quantity * p.price) as calculated_amount
+From sales s
+Join products p on s.product_id = p.product_id
+Where s.total_amount != (s.quantity * p.price);
+
+-- Actvity 3: data transformation 
+Create or Replace view  comprehensive_sales_report as
+Select 
+    s.sale_id,
+    s.sale_date,
+    c.customer_name,
+    c.city,
+    p.product_name,
+    s.quantity,
+    p.price,
+    s.total_amount
+from sales s
+inner join customers c on s.customer_id = c.customer_id
+inner join products p on  s.product_id = p.product_id;
+-- View the report
+Select * from comprehensive_sales_report limit 10;
+
+-- Actvity 4: data analysis and aggregation 
+-- total sales per city
+select 
+city,
+sum(total_amount) as total_revenue
+from comprehensive_sales_report
+group by city
+order by total_revenue desc;
+
+-- total transactions per city
+SELECT 
+    city, 
+    COUNT(sale_id) as total_transactions
+From comprehensive_sales_report
+Group by  city
+Order by total_transactions Desc;
+
+-- unique customers per city
+select 
+city,
+count(distinct customer_name) as unique_customers
+from comprehensive_sales_report
+group by city
+order by unique_customers desc; 
+
+-- average order value per city
+Select 
+    city, 
+    Avg(total_amount) as avg_order_value
+From comprehensive_sales_report
+Group by city
+Order by  avg_order_value Desc;
+
+-- roduct Demand per City
+Select 
+    city, 
+    product_name, 
+    Sum(quantity) as total_quantity_sold
+From comprehensive_sales_report
+Group by city, product_name
+Order by city, total_quantity_sold Desc;
+
+-- Monthly Sales Trend
+Select
+    Date_format(Str_to_date(sale_date, '%m/%d/%Y'), '%Y-%m') as sales_month, 
+    Sum(total_amount) as total_monthly_sales
+From comprehensive_sales_report
+Group by sales_month
+order by  sales_month;
+
+--  Customer Rating Analysis
+
+Select
+    c.city, 
+    Avg(s.rating) as avg_customer_rating
+From sales s
+Join customers c on  s.customer_id = c.customer_id
+Group by c.city
+Order by  avg_customer_rating Desc;
+
+-- activity 5: recommendations
+/the top cities from activity 4 for opening new physcial monday coffee shop locations city 1,2 and 3.
+city 3 has the highest performer within the dataset,
+ranking 1 within the total revenue ($15,627,320) in total transactions (2,135 orders). 
+customers have purchased high volume demand.
+city 2 is holding up number 2 spot across both total revenue which was ($11,854,600) and 
+total transactions (1,601 orders) its shows a high- value market.
+city 1 secures the 3 spot for revenue ($10,720,736) and total orders of (1,464)
+if the money coffee changes shop business changes the target number of the individual, immediate sales occur
+city 5 has 68 unique people and city 4 has 66m it may replace city 1 to create a wider audience
+nevertheless, by expanding more monday coffee shops to city 3,2 and 1 it can reduce the risk anf increase immediate profibality
+by doing this it builds sales momentum already exisiting./ 
